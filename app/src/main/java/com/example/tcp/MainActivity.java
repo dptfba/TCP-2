@@ -206,8 +206,8 @@ public class MainActivity extends AppCompatActivity {
                 // int port=Integer.valueOf(temp[1]);//获取端口号
 
 
-                String ip = "192.168.1.115";
-                int port = 9999;//端口号
+                String ip = "192.168.1.114";
+                int port = 8088;//端口号
 
                 socket = new Socket(ip, port);//创建连接地址和端口号
 
@@ -373,17 +373,22 @@ public class MainActivity extends AppCompatActivity {
                            // 存储接收到的数据
 
                             byte[] ReadBuffer0 = new byte[ReadBufferLenght];//存储接收到的数据
-                           for (int i = 0; i < ReadBufferLenght; i++) {
-                               ReadBuffer0[i] = ReadBuffer[i];
+                            if(ReadBufferLenght>0)
+                            {
+                                for (int i = 0; i < ReadBufferLenght; i++) {
+                                    ReadBuffer0[i] = ReadBuffer[i];
+                                }
+
+
+                                Log.d("===收到的数据===", ReadBuffer0.toString());
+                                Message msg=new Message();
+                                msg.what=0;
+                                mHandler.sendMessage(msg);
+
+                                sendHandleMsg(mHandler, "ReadData", ReadBuffer0);//向Handle发送消息
+
                             }
 
-
-                           Log.d("===收到的数据===", ReadBuffer0.toString());
-                            Message msg=new Message();
-                            msg.what=0;
-                            mHandler.sendMessage(msg);
-
-                           sendHandleMsg(mHandler, "ReadData", ReadBuffer0);//向Handle发送消息
 
 
                     if (ReadBufferLenght == -1) {
@@ -435,8 +440,26 @@ public class MainActivity extends AppCompatActivity {
             }
 
             byte[] ReadByte = bundle.getByteArray("ReadData");
+            if(ReadByte!=null) {
+                //tv_voltage.append(bytyToHexstr(ReadByte));
 
-          //  tv_voltage.append(byteToHexStr(ReadByte));
+                if((ReadByte[0] ==0xAA)&&(ReadByte.length ==20)&&(ReadByte[19] ==0xAA))
+                {
+                 switch(ReadByte[2]) {
+                     case 29:
+                         int value = ReadByte[3] << 8 + ReadByte[4];
+                         tv_voltage.append(Integer.toString(value));
+                         break;
+
+
+
+                 }
+
+                }
+
+
+
+            }
 
 
 
