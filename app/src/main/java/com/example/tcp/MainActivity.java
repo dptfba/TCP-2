@@ -9,6 +9,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     InputStream inputStream;//获取输入流,可以用来判断有没有断开连接
     OutputStream outputStream;//获得输出流
     ThreadReadData threadReadData = new ThreadReadData();//接收数据的任务
-   // ThreadSendData threadSendData = new ThreadSendData();//发送数据的任务
+    // ThreadSendData threadSendData = new ThreadSendData();//发送数据的任务
     boolean threadReadDataFlage = false;//接收数据任务一直运行控制
     boolean threadSendDataFlage = false;//发送数据任务一直运行控制
     byte[] ReadBuffer = new byte[2048];//存储接收到的数据
@@ -87,14 +88,14 @@ public class MainActivity extends AppCompatActivity {
 
     int data = 0;//switch语句
 
-    final Timer timer=new Timer();
-
+    final Timer timer = new Timer();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         tv_ip = findViewById(R.id.tv_ip);
         tv_ip.setText(getLocalIpAddress());
         btn_connect = findViewById(R.id.btn_connect);
@@ -118,8 +119,7 @@ public class MainActivity extends AppCompatActivity {
                         mthreadConnectService = threadConnectService;
                         Toast.makeText(getApplicationContext(), "连接服务器成功", Toast.LENGTH_SHORT).show();
 
-                        autoSendData();
-
+                        autoSendData();//自动发送数据
 
 
                     } catch (Exception e) {
@@ -195,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
     class ThreadConnectService extends Thread {
         @Override
         public void run() {
+
             InetAddress iptAddresses;
             String IPAdressPort = "";
 
@@ -227,8 +228,6 @@ public class MainActivity extends AppCompatActivity {
 //                mthreadSendData = threadSendData;
 
 
-
-
                 ThreadReadData threadReadData = new ThreadReadData();
                 threadReadData.start();//接收数据线程开启
                 mthreadReadData = threadReadData;
@@ -246,114 +245,108 @@ public class MainActivity extends AppCompatActivity {
      * 发送数据任务
      **/
 
-   /** class ThreadSendData extends Thread implements Runnable{
-        boolean mThreadSendData = true;
+    /** class ThreadSendData extends Thread implements Runnable{
+     boolean mThreadSendData = true;
 
-        @Override
-        public void run() {
-            while (mThreadSendData && threadSendDataFlage) {//threadSendDataFlage是发送数据任务一直运行控制
+     @Override public void run() {
+     while (mThreadSendData && threadSendDataFlage) {//threadSendDataFlage是发送数据任务一直运行控制
 
-                if (SendDataCnt > 0) {//要发送的数据个数大于0
-                    try {
+     if (SendDataCnt > 0) {//要发送的数据个数大于0
+     try {
 
-//                        switch (data){
-//                            case 0://电压
-//                                String SendVoltageStr="AA 00 20 01 40 5D C0 00 00 00 00 00 00 00 00 00 00 00 00 28";
-//                               byte[] SendBuffer0=HexString2Bytes(SendVoltageStr.replace(" ",""));
-//                               Log.d("=====",SendBuffer0.toString());
-//                               for(int i=0;i<SendVoltageStr.length();i++){
-//                                   SendBuffer[i]=SendBuffer0[i];
-//
-//                               }
-//                                SendDataCnt=sendDataString.length();
-//                                outputStream.write(SendBuffer0,0,SendDataCnt);//byte[] SendBuffer=new byte[2048];
-//                                                                                 // 存储发送的数据
-//                                sendHandleMsg(mHandler,"ReadData",SendBuffer0);//向Handle发送数据
-//                                Log.d("==22===",SendBuffer0.toString());
-//                                SendDataCnt=0;//清零发送的个数
-//                                break;
-//
-//                        }
+     //                        switch (data){
+     //                            case 0://电压
+     //                                String SendVoltageStr="AA 00 20 01 40 5D C0 00 00 00 00 00 00 00 00 00 00 00 00 28";
+     //                               byte[] SendBuffer0=HexString2Bytes(SendVoltageStr.replace(" ",""));
+     //                               Log.d("=====",SendBuffer0.toString());
+     //                               for(int i=0;i<SendVoltageStr.length();i++){
+     //                                   SendBuffer[i]=SendBuffer0[i];
+     //
+     //                               }
+     //                                SendDataCnt=sendDataString.length();
+     //                                outputStream.write(SendBuffer0,0,SendDataCnt);//byte[] SendBuffer=new byte[2048];
+     //                                                                                 // 存储发送的数据
+     //                                sendHandleMsg(mHandler,"ReadData",SendBuffer0);//向Handle发送数据
+     //                                Log.d("==22===",SendBuffer0.toString());
+     //                                SendDataCnt=0;//清零发送的个数
+     //                                break;
+     //
+     //                        }
 
-                        String SendVoltageStr = "AA 00 20 01 40 5D C0 00 00 00 00 00 00 00 00 00 00 00 00 28";
-                        byte[] SendBuffer0 = HexString2Bytes(SendVoltageStr.replace(" ", ""));//16进制发送
-
-
-                        for (int i = 0; i < SendBuffer0.length; i++) {
-                            SendBuffer[i] = SendBuffer0[i];
-
-                        }
-                        SendDataCnt = SendBuffer0.length;
-                        Log.d("==发送数据线程中的发送的数据===", SendBuffer0.toString());
-
-                        outputStream.write(SendBuffer, 0, SendDataCnt);//byte[] SendBuffer=new byte[2048];
-                        // 存储发送的数据
-                         SendDataCnt=0;//清零发送的个数
+     String SendVoltageStr = "AA 00 20 01 40 5D C0 00 00 00 00 00 00 00 00 00 00 00 00 28";
+     byte[] SendBuffer0 = HexString2Bytes(SendVoltageStr.replace(" ", ""));//16进制发送
 
 
+     for (int i = 0; i < SendBuffer0.length; i++) {
+     SendBuffer[i] = SendBuffer0[i];
 
-                    } catch (IOException e) {
+     }
+     SendDataCnt = SendBuffer0.length;
+     Log.d("==发送数据线程中的发送的数据===", SendBuffer0.toString());
 
-                        sendHandleMsg(mHandler, "ConState", "ConNO");//向Handle发送消息
-                        mThreadSendData = false;
-                        // ConnectFlage=true;
-                        threadReadDataFlage = false;//关掉接收任务,预防产生多的任务
-                        threadSendDataFlage = false;//关掉发送任务,预防产生多的任务
-                        try {
-                            mthreadSendData.interrupt();
-                        } catch (Exception e2) {
-                        }
-                        SendDataCnt = 0;
-                    }
+     outputStream.write(SendBuffer, 0, SendDataCnt);//byte[] SendBuffer=new byte[2048];
+     // 存储发送的数据
+     SendDataCnt=0;//清零发送的个数
 
-                }
 
-            }
-        }
-    }
-        **/
+
+     } catch (IOException e) {
+
+     sendHandleMsg(mHandler, "ConState", "ConNO");//向Handle发送消息
+     mThreadSendData = false;
+     // ConnectFlage=true;
+     threadReadDataFlage = false;//关掉接收任务,预防产生多的任务
+     threadSendDataFlage = false;//关掉发送任务,预防产生多的任务
+     try {
+     mthreadSendData.interrupt();
+     } catch (Exception e2) {
+     }
+     SendDataCnt = 0;
+     }
+
+     }
+
+     }
+     }
+     }
+     **/
 
     /**
      * 用线程实现每隔一段时间自动执行发送代码
-     * **/
-    private  void autoSendData(){
+     **/
+    private void autoSendData() {
         timer.scheduleAtFixedRate(new TimerTask() {
 
 
             @Override
             public void run() {
-                Message msg = new Message();
-                msg.what = 0;
-               if(msg.what==0){
-                   Log.d("====自动代码块执行的===", "what=0");
 
-                   try{
-                       String SendVoltageStr = "AA 00 20 01 40 5D C0 00 00 00 00 00 00 00 00 00 00 00 00 28";
-                       byte[] SendBuffer0 = HexString2Bytes(SendVoltageStr.replace(" ", ""));//16进制发送
+                   if(SendDataCnt>0){//要发送的数据个数大于0
+                       try {
+                           String SendVoltageStr = "AA 00 20 01 40 5D C0 00 00 00 00 00 00 00 00 00 00 00 00 28";
+                           byte[] SendBuffer0 = HexString2Bytes(SendVoltageStr.replace(" ", ""));//16进制发送
 
 
-                       for (int i = 0; i < SendBuffer0.length; i++) {
-                           SendBuffer[i] = SendBuffer0[i];
+                           for (int i = 0; i < SendBuffer0.length; i++) {
+                               SendBuffer[i] = SendBuffer0[i];
+
+                           }
+                           SendDataCnt = SendBuffer0.length;
+                           Log.d("==自动发送的数据===", SendBuffer0.toString());
+
+                           outputStream.write(SendBuffer, 0, SendDataCnt);//byte[] SendBuffer=new byte[2048];
+                           // 存储发送的数据
+                           SendDataCnt = 0;//清零发送的个数
+
+                       } catch (Exception e) {
+                           sendHandleMsg(mHandler,"ConState","ConNo");//向Handle发送消息
 
                        }
-                       SendDataCnt = SendBuffer0.length;
-                       Log.d("==自动发送的数据===", SendBuffer0.toString());
-
-                       outputStream.write(SendBuffer, 0, SendDataCnt);//byte[] SendBuffer=new byte[2048];
-                       // 存储发送的数据
-                       SendDataCnt=0;//清零发送的个数
-
-                       mHandler.sendMessage(msg);
-                   }catch (Exception e){
-
                    }
-
-               }
-
 
             }
 
-        }, 1000,2000);
+        }, 1000, 2000);
     }
 
     /**
@@ -367,24 +360,13 @@ public class MainActivity extends AppCompatActivity {
             while (mThreadReadDataFlage && threadReadDataFlage) {
                 try {
 
+                    ReadBufferLenght = inputStream.read(ReadBuffer);//服务器断开会返回-1,ReadBufferLenght是读取数据的长度
+                    byte[] ReadBuffer0 = new byte[ReadBufferLenght];//存储接收到的数据
+                    for (int i = 0; i < ReadBufferLenght; i++) {
+                        ReadBuffer0[i] = ReadBuffer[i];
+                    }
 
-                           ReadBufferLenght = inputStream.read(ReadBuffer);//服务器断开会返回-1,ReadBufferLenght是读取数据的长度
-                           // byte[] readBuffer=new byte[2048];
-                           // 存储接收到的数据
-
-                            byte[] ReadBuffer0 = new byte[ReadBufferLenght];//存储接收到的数据
-                           for (int i = 0; i < ReadBufferLenght; i++) {
-                               ReadBuffer0[i] = ReadBuffer[i];
-                            }
-
-
-                           Log.d("===收到的数据===", ReadBuffer0.toString());
-                            Message msg=new Message();
-                            msg.what=0;
-                            mHandler.sendMessage(msg);
-
-                           sendHandleMsg(mHandler, "ReadData", ReadBuffer0);//向Handle发送消息
-
+                     sendHandleMsg(mHandler, "ReadData", ReadBuffer0);//向Handle发送消息
 
                     if (ReadBufferLenght == -1) {
                         mThreadReadDataFlage = false;
@@ -396,7 +378,6 @@ public class MainActivity extends AppCompatActivity {
                         sendHandleMsg(mHandler, "ConState", "ConNO");//向Handle发送消息
 
                     }
-
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -412,47 +393,33 @@ public class MainActivity extends AppCompatActivity {
      **/
 
     private Handler mHandler = new Handler() {
+
         @Override
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
             Bundle bundle = msg.getData();
-            String string = bundle.getString("ConState");
+            byte[] ReadByte = bundle.getByteArray("ReadData");
 
 
+            if (msg.what == 0x00) {
+                //  byte[] ReadByte = bundle.getByteArray("ReadData");
+                // byte[] ReadByte=new byte[]{0,2};
 
-            try {
-                if (string.equals("ConOK")) {
-                    Toast.makeText(getApplicationContext(), "连接成功", Toast.LENGTH_SHORT).show();
-
-                } else if (string.equals("ConNO")) {
-                    Toast.makeText(getApplicationContext(), "与服务器断开连接", Toast.LENGTH_SHORT).show();
-
+                //  Log.e("MainActivity",new String(ReadByte));//打印消息
+                if(ReadByte!=null){
+                    tv_voltage.append(byteToHexStr(ReadByte));
                 }
+               // tv_voltage.append(byteToHexStr(ReadByte));//这里报错
 
-
-            } catch (Exception e) {
 
             }
 
-            byte[] ReadByte = bundle.getByteArray("ReadData");
-
-          //  tv_voltage.append(byteToHexStr(ReadByte));
-
-
-
-
-
-           // byte[] ReadByte = bundle.getByteArray("ReadData");
-            //  tv_voltage.append(byteToHexStr(ReadByte));
-
-
+            // byte[] ReadByte = bundle.getByteArray("ReadData");
+            // Log.d("handle接收到的数据",ReadByte.toString());
 
 
         }
-
     };
-
-
 
     /**
      * 向handle发送消息方法
