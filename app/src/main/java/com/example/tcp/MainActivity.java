@@ -354,7 +354,8 @@ public class MainActivity extends AppCompatActivity {
             byte[] ReadByte = bundle.getByteArray("ReadData");
             if(ReadByte!=null){
                 tv_voltage.setText(byteToHexStr(ReadByte));
-                /////tv_voltage.setText(byteToHexStr(ReadByte));
+                //
+                // tv_voltage.setText(byteToHexStr(ReadByte));
             }
 
 
