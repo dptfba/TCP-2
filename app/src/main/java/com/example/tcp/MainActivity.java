@@ -241,75 +241,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    /**
-     * 发送数据任务
-     **/
-
-    /** class ThreadSendData extends Thread implements Runnable{
-     boolean mThreadSendData = true;
-
-     @Override public void run() {
-     while (mThreadSendData && threadSendDataFlage) {//threadSendDataFlage是发送数据任务一直运行控制
-
-     if (SendDataCnt > 0) {//要发送的数据个数大于0
-     try {
-
-     //                        switch (data){
-     //                            case 0://电压
-     //                                String SendVoltageStr="AA 00 20 01 40 5D C0 00 00 00 00 00 00 00 00 00 00 00 00 28";
-     //                               byte[] SendBuffer0=HexString2Bytes(SendVoltageStr.replace(" ",""));
-     //                               Log.d("=====",SendBuffer0.toString());
-     //                               for(int i=0;i<SendVoltageStr.length();i++){
-     //                                   SendBuffer[i]=SendBuffer0[i];
-     //
-     //                               }
-     //                                SendDataCnt=sendDataString.length();
-     //                                outputStream.write(SendBuffer0,0,SendDataCnt);//byte[] SendBuffer=new byte[2048];
-     //                                                                                 // 存储发送的数据
-     //                                sendHandleMsg(mHandler,"ReadData",SendBuffer0);//向Handle发送数据
-     //                                Log.d("==22===",SendBuffer0.toString());
-     //                                SendDataCnt=0;//清零发送的个数
-     //                                break;
-     //
-     //                        }
-
-     String SendVoltageStr = "AA 00 20 01 40 5D C0 00 00 00 00 00 00 00 00 00 00 00 00 28";
-     byte[] SendBuffer0 = HexString2Bytes(SendVoltageStr.replace(" ", ""));//16进制发送
-
-
-     for (int i = 0; i < SendBuffer0.length; i++) {
-     SendBuffer[i] = SendBuffer0[i];
-
-     }
-     SendDataCnt = SendBuffer0.length;
-     Log.d("==发送数据线程中的发送的数据===", SendBuffer0.toString());
-
-     outputStream.write(SendBuffer, 0, SendDataCnt);//byte[] SendBuffer=new byte[2048];
-     // 存储发送的数据
-     SendDataCnt=0;//清零发送的个数
-
-
-
-     } catch (IOException e) {
-
-     sendHandleMsg(mHandler, "ConState", "ConNO");//向Handle发送消息
-     mThreadSendData = false;
-     // ConnectFlage=true;
-     threadReadDataFlage = false;//关掉接收任务,预防产生多的任务
-     threadSendDataFlage = false;//关掉发送任务,预防产生多的任务
-     try {
-     mthreadSendData.interrupt();
-     } catch (Exception e2) {
-     }
-     SendDataCnt = 0;
-     }
-
-     }
-
-     }
-     }
-     }
-     **/
 
     /**
      * 用线程实现每隔一段时间自动执行发送代码
@@ -380,7 +311,12 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    sendHandleMsg(mHandler,"ConState","ConNO");//向Handle发送消息
+                    mThreadReadDataFlage=false;
+                    threadSendDataFlage=false;//关掉接收任务,预防产生多的任务
+                    threadSendDataFlage=false;//关掉发送任务,预防产生多的任务
+                    try{mthreadReadData.interrupt();}catch (Exception e2){}
+                    SendDataCnt=0;
                 }
 
             }
@@ -398,24 +334,26 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
             Bundle bundle = msg.getData();
-            byte[] ReadByte = bundle.getByteArray("ReadData");
-
-
-            if (msg.what == 0x00) {
-                //  byte[] ReadByte = bundle.getByteArray("ReadData");
-                // byte[] ReadByte=new byte[]{0,2};
-
-                //  Log.e("MainActivity",new String(ReadByte));//打印消息
-                if(ReadByte!=null){
-                    tv_voltage.append(byteToHexStr(ReadByte));
+            String string = bundle.getString("ConState");
+            try
+            {
+                if(string.equals("ConOK"))
+                {
+                    Toast.makeText(getApplicationContext(), "连接成功", Toast.LENGTH_SHORT).show();
                 }
-               // tv_voltage.append(byteToHexStr(ReadByte));//这里报错
+                else if (string.equals("ConNO")) {
+                    Toast.makeText(getApplicationContext(), "与服务器断开连接", Toast.LENGTH_SHORT).show();
+                }
 
-
+            } catch (Exception e) {
+                // TODO: handle exception
             }
 
-            // byte[] ReadByte = bundle.getByteArray("ReadData");
-            // Log.d("handle接收到的数据",ReadByte.toString());
+            byte[] ReadByte = bundle.getByteArray("ReadData");
+            if(ReadByte!=null){
+                tv_voltage.setText(byteToHexStr(ReadByte));
+            }
+
 
 
         }
