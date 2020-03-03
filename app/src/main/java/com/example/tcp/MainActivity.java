@@ -265,6 +265,8 @@ public class MainActivity extends AppCompatActivity {
                            SendDataCnt = SendBuffer0.length;
                            Log.d("==自动发送的数据===", SendBuffer0.toString());
 
+                           
+
                            outputStream.write(SendBuffer, 0, SendDataCnt);//byte[] SendBuffer=new byte[2048];
                            // 存储发送的数据
                            SendDataCnt = 0;//清零发送的个数
